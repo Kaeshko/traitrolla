@@ -2,6 +2,6 @@
 	local Event = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.GetTraitsMetadata
 	local otvet = Event:InvokeServer()
 for i, v in pairs(otvet) do
-	print(i)
-	print(v)
+	print("key: "..i.." value: "..v)
+
 end
