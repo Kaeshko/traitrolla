@@ -11,7 +11,7 @@
 local G2L = {};
 
 -- StarterGui.ScreenGui
-G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
 G2L["1"]["Enabled"] = false;
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 G2L["1"]["ResetOnSpawn"] = false;
@@ -310,7 +310,7 @@ local script = G2L["13"];
 		else
 			startbtn.Text = "Stop"
 			connect = Event.OnClientEvent:Connect(function(hypetabla)
-				sendLog(hypetabla)
+				sendLog("trait", hypetabla)
 				local besttrait = nil
 				local index = nil
 	
