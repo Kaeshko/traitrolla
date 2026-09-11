@@ -9,7 +9,7 @@
 
 -- Instances: 19 | Scripts: 1 | Modules: 0 | Tags: 0
 local G2L = {};
-
+print("creating")
 -- StarterGui.ScreenGui
 G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
