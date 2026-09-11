@@ -11,7 +11,7 @@
 local G2L = {};
 
 -- StarterGui.ScreenGui
-G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 G2L["1"]["ResetOnSpawn"] = false;
 
@@ -238,7 +238,7 @@ local script = G2L["13"];
 		hexedbtn.Activated:Connect(function()
 			isHexedSelected = not isHexedSelected
 			hexedbtn.Text = "Hexed: " .. (isHexedSelected and "ON" or "OFF")
-			hexedbtn.TextColor3 = isHexedSelected and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(255, 255, 255)
+			hexedbtn.TextColor3 = isHexedSelected and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(0, 0, 0)
 		end)
 	end
 	
