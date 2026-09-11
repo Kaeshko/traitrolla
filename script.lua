@@ -7,9 +7,9 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
 ]=]
 
--- Instances: 19 | Scripts: 1 | Modules: 0 | Tags: 0
+-- Instances: 21 | Scripts: 1 | Modules: 0 | Tags: 0
 local G2L = {};
-print("creating")
+
 -- StarterGui.ScreenGui
 G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
@@ -196,6 +196,26 @@ G2L["13"] = Instance.new("LocalScript", G2L["2"]);
 G2L["13"]["Name"] = [[Handlerwowowowowo]];
 
 
+-- StarterGui.ScreenGui.Frame.HexedToggle
+G2L["14"] = Instance.new("TextButton", G2L["2"]);
+G2L["14"]["TextWrapped"] = true;
+G2L["14"]["BorderSizePixel"] = 0;
+G2L["14"]["TextSize"] = 14;
+G2L["14"]["TextScaled"] = true;
+G2L["14"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["14"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["14"]["Size"] = UDim2.new(0, 77, 0, 50);
+G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["Name"] = [[HexedToggle]];
+G2L["14"]["Position"] = UDim2.new(0.01864, 0, 0.01712, 0);
+
+
+-- StarterGui.ScreenGui.Frame.HexedToggle.UICorner
+G2L["15"] = Instance.new("UICorner", G2L["14"]);
+
+
+
 -- StarterGui.ScreenGui.Frame.Handlerwowowowowo
 local function C_13()
 local script = G2L["13"];
@@ -210,12 +230,25 @@ local script = G2L["13"];
 	local plrs = game:GetService("Players")
 	local plr = plrs.LocalPlayer
 	local startbtn = mainframe:FindFirstChild("Toggle")
+	local hexedbtn = mainframe:FindFirstChild("HexedToggle")
+	local isHexedSelected = false
+	
+	if hexedbtn then
+		hexedbtn.Text = "Hexed: OFF"
+		hexedbtn.Activated:Connect(function()
+			isHexedSelected = not isHexedSelected
+			hexedbtn.Text = "Hexed: " .. (isHexedSelected and "ON" or "OFF")
+			hexedbtn.TextColor3 = isHexedSelected and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(255, 255, 255)
+		end)
+	end
+	
 	local prioritytable = {}
 	local filter = {}
 	local discardevent = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.DiscardTraits
 	local picktraitevent = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.PickTrait
 	local HttpService = game:GetService("HttpService")
 	local SERVER_URL = "http://72.56.106.202:8090/api/collections/logs/records"
+	
 	local function sendLog(tag, myTable)
 		task.spawn(function()
 			local payload = {
@@ -242,28 +275,45 @@ local script = G2L["13"];
 		end)
 	end
 	
+	local function makeKey(name, isHexed)
+		return (isHexed and "HEXED_" or "NORMAL_") .. tostring(name)
+	end
+	
 	local function getcurrenttraitstats()
 		local tabla = {}
-		tabla["TraitName"] = plr:FindFirstChild("Data"):FindFirstChild("Ability"):GetAttribute("Trait")
-		tabla["Hexed"] = plr:FindFirstChild("Data"):FindFirstChild("Ability"):GetAttribute("Hexed")
+		local ability = plr:FindFirstChild("Data") and plr.Data:FindFirstChild("Ability")
+		if ability then
+			tabla["TraitName"] = ability:GetAttribute("Trait")
+			tabla["Hexed"] = ability:GetAttribute("Hexed") == true
+		else
+			tabla["TraitName"] = nil
+			tabla["Hexed"] = false
+		end
 		return tabla
 	end
 	
 	addbtn.Activated:Connect(function()
-		local cooltabla = {}
-		cooltabla["TraitName"] = traitname.Text
-		cooltabla["Hexed"] = false
-		table.insert(filter, cooltabla)
-		prioritytable[traitname.Text] = tonumber(priority.Text) or 0
+		local name = traitname.Text
+		if name == "" then return end
+	
+		local isHexed = isHexedSelected
+		local prVal = tonumber(priority.Text) or 0
+		local key = makeKey(name, isHexed)
+	
+		prioritytable[key] = prVal
+		table.insert(filter, {TraitName = name, Hexed = isHexed, Key = key})
+	
 		local clone = template:Clone()
 		clone.Parent = xz
-		clone.Text = traitname.Text.." | PR:"..priority.Text
+		local prefix = isHexed and "[HEXED] " or ""
+		clone.Text = prefix .. name .. " | PR: " .. prVal
 		clone.Visible = true
+	
 		clone:FindFirstChild("delete").Activated:Connect(function()
 			clone:Destroy()
-			prioritytable[cooltabla["TraitName"]] = nil
+			prioritytable[key] = nil
 			for i = #filter, 1, -1 do
-				if filter[i].TraitName == cooltabla["TraitName"] then
+				if filter[i].Key == key then
 					table.remove(filter, i)
 				end
 			end
@@ -283,22 +333,16 @@ local script = G2L["13"];
 				local index = nil
 	
 				local currentStats = getcurrenttraitstats()
-				local currentTraitName = currentStats["TraitName"]
-				local lastpriority = prioritytable[currentTraitName] or -999
+				local currentKey = makeKey(currentStats["TraitName"], currentStats["Hexed"])
+				local lastpriority = prioritytable[currentKey] or -999
 	
 				for i, v in ipairs(hypetabla) do
-					local currentTraitName = v.Trait
-					local isMatch = false
+					local rollName = v.Trait
+					local rollHexed = (v.Hexed == true)
+					local rollKey = makeKey(rollName, rollHexed)
 	
-					for _, filterData in ipairs(filter) do
-						if filterData.TraitName == currentTraitName then
-							isMatch = true
-							break
-						end
-					end
-	
-					if isMatch then
-						local currentPriority = prioritytable[currentTraitName] or 0
+					local currentPriority = prioritytable[rollKey]
+					if currentPriority then
 						if currentPriority > lastpriority then
 							lastpriority = currentPriority
 							besttrait = v
@@ -307,16 +351,14 @@ local script = G2L["13"];
 					end
 				end
 	
-				if besttrait then
+				if besttrait and index then
 					picktraitevent:InvokeServer(index)
-					
 				else
 					discardevent:InvokeServer()
 				end
 			end)
 		end
 	end)
-	
 end;
 task.spawn(C_13);
 
