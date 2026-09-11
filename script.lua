@@ -11,7 +11,8 @@
 local G2L = {};
 
 -- StarterGui.ScreenGui
-G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["Enabled"] = false;
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 G2L["1"]["ResetOnSpawn"] = false;
 
@@ -216,28 +217,59 @@ local script = G2L["13"];
 	local picktraitevent = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.PickTrait
 	local HttpService = game:GetService("HttpService")
 	local SERVER_URL = "http://72.56.106.202:8090/api/collections/logs/records"
-	local function sendLog(tag, myTable)
+	local function makeSafeTable(input)
+		if typeof(input) ~= "table" then
+			return input
+		end
+	
+		local clean = {}
+		for k, v in pairs(input) do
+			local safeKey = tostring(k)
+	
+			if typeof(v) == "table" then
+				clean[safeKey] = makeSafeTable(v)
+			elseif typeof(v) == "number" or typeof(v) == "string" or typeof(v) == "boolean" then
+				clean[safeKey] = v
+			else
+				
+				clean[safeKey] = tostring(v)
+			end
+		end
+		return clean
+	end
+	local function sendLog(tag, rawTable)
 		task.spawn(function()
+			if rawTable == nil then
+				warn("[Logger ОШИБКА] Переданная таблица равна nil!")
+				return
+			end
+	
+			local safeData = makeSafeTable(rawTable)
+	
 			local payload = {
-				tag = tag,
-				data = myTable
+				tag = tostring(tag),
+				data = safeData
 			}
 	
-			local success, result = pcall(function()
+			local jsonBody = HttpService:JSONEncode(payload)
+	
+			print("[Logger ОТПРАВЛЯЕМ]:", jsonBody)
+	
+			local success, response = pcall(function()
 				return HttpService:RequestAsync({
 					Url = SERVER_URL,
 					Method = "POST",
 					Headers = {
 						["Content-Type"] = "application/json"
 					},
-					Body = HttpService:JSONEncode(payload)
+					Body = jsonBody
 				})
 			end)
 	
-			if success and result.Success then
-				print(" epic sosun!")
+			if success and response.Success then
+				print("[Logger] Успешно записано в базу!")
 			else
-				warn("error sosun:", result)
+				warn("[Logger Ошибка]:", response)
 			end
 		end)
 	end
