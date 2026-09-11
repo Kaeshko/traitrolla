@@ -12,7 +12,6 @@ local G2L = {};
 
 -- StarterGui.ScreenGui
 G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
-G2L["1"]["Enabled"] = false;
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 G2L["1"]["ResetOnSpawn"] = false;
 
