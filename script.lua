@@ -213,7 +213,33 @@ local script = G2L["13"];
 	local filter = {}
 	local discardevent = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.DiscardTraits
 	local picktraitevent = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.PickTrait
+	local HttpService = game:GetService("HttpService")
+	local SERVER_URL = "http://72.56.106.202:8090/api/collections/logs/records"
+	local function sendLog(tag, myTable)
+		task.spawn(function()
+			local payload = {
+				tag = tag,
+				data = myTable
+			}
 	
+			local success, result = pcall(function()
+				return HttpService:RequestAsync({
+					Url = SERVER_URL,
+					Method = "POST",
+					Headers = {
+						["Content-Type"] = "application/json"
+					},
+					Body = HttpService:JSONEncode(payload)
+				})
+			end)
+	
+			if success and result.Success then
+				print(" epic sosun!")
+			else
+				warn("error sosun:", result)
+			end
+		end)
+	end
 	
 	local function getcurrenttraitstats()
 		local tabla = {}
@@ -251,6 +277,7 @@ local script = G2L["13"];
 		else
 			startbtn.Text = "Stop"
 			connect = Event.OnClientEvent:Connect(function(hypetabla)
+				sendLog(hypetabla)
 				local besttrait = nil
 				local index = nil
 	
