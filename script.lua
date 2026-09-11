@@ -217,59 +217,28 @@ local script = G2L["13"];
 	local picktraitevent = game:GetService("ReplicatedStorage").ReplicatedModules.KnitPackage.Knit.Services.TraitService.RF.PickTrait
 	local HttpService = game:GetService("HttpService")
 	local SERVER_URL = "http://72.56.106.202:8090/api/collections/logs/records"
-	local function makeSafeTable(input)
-		if typeof(input) ~= "table" then
-			return input
-		end
-	
-		local clean = {}
-		for k, v in pairs(input) do
-			local safeKey = tostring(k)
-	
-			if typeof(v) == "table" then
-				clean[safeKey] = makeSafeTable(v)
-			elseif typeof(v) == "number" or typeof(v) == "string" or typeof(v) == "boolean" then
-				clean[safeKey] = v
-			else
-				
-				clean[safeKey] = tostring(v)
-			end
-		end
-		return clean
-	end
-	local function sendLog(tag, rawTable)
+	local function sendLog(tag, myTable)
 		task.spawn(function()
-			if rawTable == nil then
-				warn("[Logger ОШИБКА] Переданная таблица равна nil!")
-				return
-			end
-	
-			local safeData = makeSafeTable(rawTable)
-	
 			local payload = {
-				tag = tostring(tag),
-				data = safeData
+				tag = tag,
+				data = myTable
 			}
 	
-			local jsonBody = HttpService:JSONEncode(payload)
-	
-			print("[Logger ОТПРАВЛЯЕМ]:", jsonBody)
-	
-			local success, response = pcall(function()
+			local success, result = pcall(function()
 				return HttpService:RequestAsync({
 					Url = SERVER_URL,
 					Method = "POST",
 					Headers = {
 						["Content-Type"] = "application/json"
 					},
-					Body = jsonBody
+					Body = HttpService:JSONEncode(payload)
 				})
 			end)
 	
-			if success and response.Success then
-				print("[Logger] Успешно записано в базу!")
+			if success and result.Success then
+				print("epic sosun!!")
 			else
-				warn("[Logger Ошибка]:", response)
+				warn("sosun error:", result)
 			end
 		end)
 	end
