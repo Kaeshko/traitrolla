@@ -7,13 +7,12 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
 ]=]
 
--- Instances: 21 | Scripts: 1 | Modules: 0 | Tags: 0
+-- Instances: 19 | Scripts: 1 | Modules: 0 | Tags: 0
 local G2L = {};
 
 -- StarterGui.ScreenGui
-G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"));
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-G2L["1"]["ResetOnSpawn"] = false;
 
 
 -- StarterGui.ScreenGui.Frame
@@ -196,26 +195,6 @@ G2L["13"] = Instance.new("LocalScript", G2L["2"]);
 G2L["13"]["Name"] = [[Handlerwowowowowo]];
 
 
--- StarterGui.ScreenGui.Frame.HexedToggle
-G2L["14"] = Instance.new("TextButton", G2L["2"]);
-G2L["14"]["TextWrapped"] = true;
-G2L["14"]["BorderSizePixel"] = 0;
-G2L["14"]["TextSize"] = 14;
-G2L["14"]["TextScaled"] = true;
-G2L["14"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["14"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["14"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["14"]["Size"] = UDim2.new(0.20508, 0, 0.17123, 0);
-G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["14"]["Name"] = [[HexedToggle]];
-G2L["14"]["Position"] = UDim2.new(0.01864, 0, 0.01712, 0);
-
-
--- StarterGui.ScreenGui.Frame.HexedToggle.UICorner
-G2L["15"] = Instance.new("UICorner", G2L["14"]);
-
-
-
 -- StarterGui.ScreenGui.Frame.Handlerwowowowowo
 local function C_13()
 local script = G2L["13"];
@@ -233,12 +212,14 @@ local script = G2L["13"];
 	local hexedbtn = mainframe:FindFirstChild("HexedToggle")
 	local isHexedSelected = false
 	
+	local CONFIG_FILE = "Traitrollacfg.json"
+	
 	if hexedbtn then
 		hexedbtn.Text = "Hexed: OFF"
 		hexedbtn.Activated:Connect(function()
 			isHexedSelected = not isHexedSelected
 			hexedbtn.Text = "Hexed: " .. (isHexedSelected and "ON" or "OFF")
-			hexedbtn.TextColor3 = isHexedSelected and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(0, 0, 0)
+			hexedbtn.TextColor3 = isHexedSelected and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(255, 255, 255)
 		end)
 	end
 	
@@ -292,16 +273,10 @@ local script = G2L["13"];
 		return tabla
 	end
 	
-	addbtn.Activated:Connect(function()
-		local name = traitname.Text
-		if name == "" then return end
-	
-		local isHexed = isHexedSelected
-		local prVal = tonumber(priority.Text) or 0
+	local function addTraitToList(name, isHexed, prVal)
 		local key = makeKey(name, isHexed)
-	
 		prioritytable[key] = prVal
-		table.insert(filter, {TraitName = name, Hexed = isHexed, Key = key})
+		table.insert(filter, {TraitName = name, Hexed = isHexed, Key = key, Priority = prVal})
 	
 		local clone = template:Clone()
 		clone.Parent = xz
@@ -318,6 +293,63 @@ local script = G2L["13"];
 				end
 			end
 		end)
+	end
+	
+	local function saveConfig()
+		if writefile then
+			local dataToSave = {}
+			for _, item in ipairs(filter) do
+				table.insert(dataToSave, {
+					TraitName = item.TraitName,
+					Hexed = item.Hexed,
+					Priority = item.Priority
+				})
+			end
+			local encoded = HttpService:JSONEncode(dataToSave)
+			pcall(function()
+				writefile(CONFIG_FILE, encoded)
+			end)
+		end
+	end
+	
+	local function loadConfig()
+		if isfile and readfile and isfile(CONFIG_FILE) then
+			local content = nil
+			local success, _ = pcall(function()
+				content = readfile(CONFIG_FILE)
+			end)
+			if success and content then
+				local decodeSuccess, data = pcall(function()
+					return HttpService:JSONDecode(content)
+				end)
+				if decodeSuccess and type(data) == "table" then
+					for _, item in ipairs(data) do
+						if item.TraitName then
+							addTraitToList(item.TraitName, item.Hexed == true, tonumber(item.Priority) or 0)
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	loadConfig()
+	
+	task.spawn(function()
+		while true do
+			task.wait(30)
+			saveConfig()
+		end
+	end)
+	
+	addbtn.Activated:Connect(function()
+		local name = traitname.Text
+		if name == "" then return end
+	
+		local isHexed = isHexedSelected
+		local prVal = tonumber(priority.Text) or 0
+	
+		addTraitToList(name, isHexed, prVal)
 	end)
 	
 	startbtn.Activated:Connect(function()
