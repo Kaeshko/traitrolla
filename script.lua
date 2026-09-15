@@ -7,7 +7,7 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
 ]=]
 
--- Instances: 19 | Scripts: 1 | Modules: 0 | Tags: 0
+-- Instances: 21 | Scripts: 1 | Modules: 0 | Tags: 0
 local G2L = {};
 
 -- StarterGui.ScreenGui
@@ -193,6 +193,26 @@ G2L["12"] = Instance.new("UICorner", G2L["11"]);
 -- StarterGui.ScreenGui.Frame.Handlerwowowowowo
 G2L["13"] = Instance.new("LocalScript", G2L["2"]);
 G2L["13"]["Name"] = [[Handlerwowowowowo]];
+
+
+-- StarterGui.ScreenGui.Frame.HexedToggle
+G2L["14"] = Instance.new("TextButton", G2L["2"]);
+G2L["14"]["TextWrapped"] = true;
+G2L["14"]["BorderSizePixel"] = 0;
+G2L["14"]["TextSize"] = 14;
+G2L["14"]["TextScaled"] = true;
+G2L["14"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["14"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["14"]["Size"] = UDim2.new(0.18111, 0, 0.17123, 0);
+G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["Name"] = [[HexedToggle]];
+G2L["14"]["Position"] = UDim2.new(0.02397, 0, 0.01712, 0);
+
+
+-- StarterGui.ScreenGui.Frame.HexedToggle.UICorner
+G2L["15"] = Instance.new("UICorner", G2L["14"]);
+
 
 
 -- StarterGui.ScreenGui.Frame.Handlerwowowowowo
